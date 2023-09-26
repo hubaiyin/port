@@ -20,24 +20,27 @@
         </div>
         <!-- phone -->
         <div class="phone">
-          <input type="text" placeholder="请输入手机号" />
+          <input type="text" placeholder="请输入手机号" v-model="phone" />
           <img src="../../assets/user.png" alt="" />
         </div>
         <!-- password -->
         <div class="password">
-          <input type="password" placeholder="请输入密码" />
+          <input type="password" placeholder="请输入密码" v-model="password" />
           <img src="../../assets/password.png" alt="" />
+          <div class="tip">
+            <span>{{ tip }}</span>
+          </div>
         </div>
         <!-- verify -->
         <div class="verify">
           <img src="../../assets/verify.png" alt="" />
-          <input type="text" placeholder="验证码" />
+          <input type="text" placeholder="验证码" v-model="verify" />
           <div class="code" @click="refreshCode">
             <identify :identifyCode="identifyCode"></identify>
           </div>
         </div>
         <!-- btn -->
-        <div class="btn">
+        <div class="btn" @click="login(2)">
           <span>登 录</span>
         </div>
         <!-- footer -->
@@ -94,6 +97,8 @@
 </template>
 <script>
 import identify from "@/component/identify.vue";
+import request from "@/api/request";
+
 export default {
   components: { identify },
   name: "dataVc",
@@ -102,8 +107,18 @@ export default {
       identifyCodes: "1234567890",
       identifyCode: "",
       status: "login",
+      phone: null,
+      password: "",
+      verify: null,
+      tip: "",
     };
   },
+  // verify:{
+  //   phone: {
+  //      test: /^1[34578]\d{9}$/,
+  //      message: "电话号码格式不正确"
+  //    },
+  // },
   mounted() {
     this.identifyCode = "";
     this.makeCode(this.identifyCodes, 4);
@@ -129,7 +144,75 @@ export default {
     toLogin() {
       this.status = "login";
     },
+    check(way) {
+      if (way === "login") {
+        if (this.phone != null && this.password != "") {
+          if (this.verify != this.identifyCode) {
+            this.tip = "验证码错误";
+            return false;
+          }
+          return true;
+        } else {
+          this.tip = "请检查信息是否填写完整！";
+          return false;
+        }
+      }
+    },
+    async login(way) {
+      if (this.check("login")) {
+        await request({
+          method: "post",
+          url: "/api/login/b",
+          data: {
+            type: way,
+            phone: this.phone,
+            password: this.password,
+          },
+        })
+          .then((res) => {
+            console.log(res);
+            if (res.data.code !== "00000") {
+              this.tip = res.data.message;
+              this.$message({
+                message: "登录失败！",
+                type: "error",
+              });
+            } else {
+              window.localStorage.setItem("token", res.data.data.token);
+              this.$message({
+                message: "登录成功！",
+                type: "success",
+              });
+              this.$router.push({ path: "/manage" });
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+            if (
+              err.code === "ECONNABORTED" ||
+              err.message === "Network Error" ||
+              err.message.includes("timeout")
+            ) {
+              this.$message({
+                message: "请求超时，请稍后重试",
+                type: "error",
+              });
+            }
+          });
+      } else {
+        this.$message({
+          message: "登录失败！",
+          type: "error",
+        });
+      }
+      // this.$verify.check();
+    },
   },
+  // computed: {
+  //    verifyError() {
+  //      return this.$verify.$errors;
+  //    }
+  //  }
 };
 </script>
 <style lang="scss" scoped>
@@ -259,6 +342,15 @@ export default {
           height: 25px;
           position: absolute;
           bottom: 20%;
+        }
+        .tip {
+          top: 110%;
+          position: absolute;
+          width: 100%;
+          span {
+            font-size: 0.6rem;
+            color: red;
+          }
         }
       }
       .verify {

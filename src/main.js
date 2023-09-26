@@ -6,7 +6,11 @@ import App from './App.vue'
 import router from './router';
 import VueRouter from 'vue-router';
 import axios from 'axios'
+import verify from "vue-verify-plugin";
 
+Vue.use(verify, {
+  blur: true
+});
 Vue.prototype.$moment = moment;
 
 Vue.use(ElementUI)
