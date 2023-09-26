@@ -101,7 +101,7 @@ import identify from '@/component/identify.vue';
       return {
         identifyCodes: "1234567890",
         identifyCode: "",
-        status:'register'
+        status:'login'
       };
     },
     mounted() {

@@ -23,11 +23,13 @@ export default {
 	height: 100%;
 } */
 #app {
-  /* font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px; */
+  height: 100vh;
+  width: 100vw;
+  min-height: 800px;
+  min-width: 1080px;
+}
+* {
+  padding: 0;
+  margin: 0;
 }
 </style>
