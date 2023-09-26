@@ -7,14 +7,12 @@
 <script>
 export default {
   name: "App",
-  mounted() {
-    console.log(this.$moment);
-  },
+  mounted() {},
 };
 </script>
 
 <style>
-*{
+* {
   margin: 0;
   padding: 0;
 }
@@ -26,7 +24,7 @@ export default {
   height: 100vh;
   width: 100vw;
   min-height: 800px;
-  min-width: 1080px;
+  min-width: 1180px;
 }
 * {
   padding: 0;
