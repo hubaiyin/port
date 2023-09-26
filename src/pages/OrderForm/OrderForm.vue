@@ -463,17 +463,17 @@ export default {
         ({ data }) => {
           // console.log(data);
           this.loading = false;
-          if (data.status === "Failed" || data.code === "A0300") {
-            // localStorage.clear("token");
+          if (data.code !== "00000") {
             this.$notify({
               title: "错误",
               message: data.message + "\n" + "将于5秒后回到登录页面",
               type: "error",
-              // onClose: () => {
-              //   setTimeout(() => {
-              //     this.$router.replace("/");
-              //   }, 5000);
-              // },
+              onClose: () => {
+                setTimeout(() => {
+                  localStorage.clear("token");
+                  this.$router.replace("/");
+                }, 5000);
+              },
             });
             return;
           }
