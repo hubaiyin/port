@@ -112,7 +112,7 @@ import request from '@/api/request';
       return {
         identifyCodes: "1234567890",
         identifyCode: "",
-        status: 'register',
+        status: 'login',
         phone: null,
         password: "",
         verify: null,
