@@ -420,7 +420,7 @@ export default {
           type: this.type,
           page: this.page,
           size: this.size,
-          keyword: this.keyword,
+          keyWord: this.keyword,
         },
       }).then(({ data }) => {
         console.log(data);

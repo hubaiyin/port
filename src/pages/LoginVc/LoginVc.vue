@@ -60,32 +60,38 @@
         <div class="inner">
           <!-- phone -->
           <div class="phone">
-            <input type="text" placeholder="请输入手机号">
+            <input type="number" placeholder="请输入手机号" v-model="registParam.phone" style="">
             <img src="../../assets/phone.png" alt="">
           </div>
           <!-- msg -->
           <div class="msg">
-            <input type="text" placeholder="请输入短信验证码">
+            <input type="text" placeholder="短信验证码" v-model="registParam.msgCode">
             <img src="../../assets/msg.png" alt="">
+            <button @click="sentMsg()" :class="{'disabled-style':getCodeBtnDisable , 'sentMsg':!getCodeBtnDisable}" :disabled="getCodeBtnDisable">
+              <span class="sent">{{ codeBtnWord }}</span>
+            </button>
           </div>
           <!-- password -->
           <div class="password">
-            <input type="text" placeholder="请输入密码">
+            <input type="password" placeholder="请输入密码" v-model="registParam.password" >
             <img src="../../assets/password.png" alt="">
           </div>
           <!-- rePassword -->
           <div class="rePassword">
-            <input type="text" placeholder="请再次输入密码">
+            <input type="password" placeholder="请再次输入密码" v-model="registParam.rePassword">
             <img src="../../assets/rePassword.png" alt="">
           </div>
           <!-- invite -->
           <div class="invite">
-            <input type="text" placeholder="请输入邀请码">
+            <input type="text" placeholder="请输入邀请码" v-model="registParam.inviteCode">
             <img src="../../assets/invite.png" alt="">
           </div>
         </div>
-        <div class="btn">
-          <span>登 录</span>
+        <div class="tipBox">
+          <span>{{ regTip }}</span>
+        </div>
+        <div class="btn" @click="register()">
+          <span>注 册</span>
         </div>
         <div class="footer">
           <span>已有账号？</span>
@@ -106,19 +112,24 @@ import request from '@/api/request';
       return {
         identifyCodes: "1234567890",
         identifyCode: "",
-        status:'login',
-        phone:null,
-        password:"",
-        verify:null,
-        tip:"",
+        status: 'register',
+        phone: null,
+        password: "",
+        verify: null,
+        tip: "",
+        regTip: "",
+        waitTime:61,
+        codeBtnWord: '获取验证码',
+        getCodeBtnDisable:false,
+        registParam: {
+          phone: null,
+          msgCode: null,
+          password: "",
+          rePassword: "",
+          inviteCode: "",
+        }
       };
     },
-    // verify:{
-    //   phone: {
-    //      test: /^1[34578]\d{9}$/,
-    //      message: "电话号码格式不正确"
-    //    },
-    // },
     mounted() {
       this.identifyCode = "";
       this.makeCode(this.identifyCodes, 4);
@@ -145,7 +156,7 @@ import request from '@/api/request';
       toLogin() {
         this.status = 'login'
       },
-      check(way){
+      check(way) {
         if(way === 'login'){
           if(this.phone != null && this.password != ""){
             if(this.verify != this.identifyCode) {
@@ -160,7 +171,35 @@ import request from '@/api/request';
           }
         }
       },
-      async login(way){
+      checkRegister(){
+        if(this.registParam.phone == null) {
+          this.regTip = "手机号不能为空!"
+          return false;
+        }
+        if(this.registParam.msgCode == null) {
+          this.regTip = "短信验证码不能为空!"
+          return false;
+        }
+        if(this.registParam.password == "") {
+          this.regTip = "密码不能为空！"
+          return false;
+        }
+        if(this.registParam.rePassword == "") {
+          this.regTip = "二次密码不能为空!"
+          return false;
+        }
+        if(this.registParam.password != this.registParam.rePassword) {
+          this.regTip = "两次输入的密码不一致!"
+          return false;
+        }
+        if(this.registParam.inviteCode == "") {
+          this.regTip = "邀请码不能为空!"
+          return false;
+        }
+        this.regTip  = "";
+        return true;
+      },
+      async login(way) {
         if(this.check('login')){
           await request({
             method: "post",
@@ -173,7 +212,7 @@ import request from '@/api/request';
           })
           .then(res => {
             console.log(res);
-            if(res.data.code !== "00000"){
+            if(res.data.code !== "00000") {
               this.tip = res.data.message;
               this.$message({
                   message: '登录失败！',
@@ -207,12 +246,113 @@ import request from '@/api/request';
         }
         // this.$verify.check();
       },
+      async register() {
+        if(this.checkRegister()){
+          console.log(this.registParam);
+          await request({
+            method:"post",
+            url:"/api/register/b",
+            data: {
+              phone: this.registParam.phone,
+              inviteCode: this.registParam.inviteCode,
+              code: this.registParam.msgCode,
+              password: this.registParam.password
+            }
+          })
+          .then(res => {
+            console.log(res);
+            if(res.data.code != "00000") {
+              this.regTip = res.data.message;
+              this.$message({
+                  message: '注册失败！',
+                  type: 'error'
+              })
+            }
+            else {
+              this.$message({
+                  message: '注册成功！',
+                  type: 'success'
+              })
+              this.status = "login"
+            }
+          }) 
+        }
+      },
+      async sentMsg() {
+        this.regTip = "";
+        let reg = /^1[3456789]\d{9}$/;
+        if(this.registParam.phone == null) {
+          this.regTip = "请填写手机号!"
+          return;
+        }
+        if(!reg.test(this.registParam.phone)){
+          this.regTip = "手机号不合法!"
+          return;
+        }
+        if(this.registParam.inviteCode == "") {
+          this.regTip = "请填写邀请码!"
+          return;
+        }
+        console.log("手机号为：" + this.registParam.phone);
+        await request({
+          method:"post",
+          url:"/api/register/send-code",
+          data: {
+            phone: this.registParam.phone,
+            inviteCode: this.registParam.inviteCode,
+          }
+        })
+        .then(res => {
+          console.log(res);          
+          if (res.data.code != "00000") {
+            this.regTip = res.data.message;
+            this.$message({
+              message: "发送失败",
+              type: 'error'
+            })
+          }
+          else {
+            this.$message({
+              message: "验证码发送成功!",
+              type: 'success'
+            })
+            let that = this
+            that.waitTime--
+            that.getCodeBtnDisable = true
+            this.codeBtnWord = `${this.waitTime}s 后重新获取`
+            let timer = setInterval(function(){
+                if(that.waitTime>1){
+                    that.waitTime--
+                    that.codeBtnWord = `${that.waitTime}s 后重新获取`
+                }
+                else{
+                    clearInterval(timer)
+                    that.codeBtnWord = '获取验证码'
+                    that.getCodeBtnDisable = false
+                    that.waitTime = 61
+                }
+            },1000)
+          }
+        })
+        .catch(err => {
+          console.log(err);
+        })
+      }
     },
-    // computed: {
-    //    verifyError() {
-    //      return this.$verify.$errors;
-    //    }
-    //  }
+    computed: {
+      // getCodeBtnDisable:{
+      //   get(){
+      //       if(this.waitTime == 61){
+      //           if(this.registParam.phone){
+      //               return false;
+      //           }
+      //           return true;
+      //       }
+      //       return true;
+      //   },
+      //   set(){} 
+      // }
+    }
   }
 </script>
 <style lang="scss" scoped>
@@ -480,6 +620,37 @@ import request from '@/api/request';
             bottom: 10%;
         }
       }
+      .phone input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+      }
+      .phone input::-webkit-outer-spin-button,
+      .phone input[type="number"] {
+        -moz-appearance: textfield;
+      }
+      .msg {
+        position: relative;
+        .sentMsg {
+          position: absolute;
+          // border: 2px solid red;
+          width: 40%;
+          padding: 6px 0;
+          bottom: 5%;
+          border-radius: 6px;
+          background-color: #0C1D41;
+          // height: 100%;
+          right: 0;
+          display: flex;
+          justify-content:center;
+          align-items: center;
+          cursor: pointer;
+          // height: 100%;
+          span {
+            font-size: 0.8rem;
+            color: white;
+            font-weight: 700;
+          }
+        }
+      }
     }
 
     .btn {
@@ -491,10 +662,22 @@ import request from '@/api/request';
         align-items: center;
         justify-content: center;
         background-color: #101010;
+        cursor: pointer;
         span {
           color: white;
           font-weight: 400;
         }
+    }
+    .tipBox {
+      position: relative;
+      bottom: 5%;
+      // border: 2px solid red;
+      width: 64%;
+      // height: 5%;
+      span {
+        font-size: 0.85rem;
+        color: red;
+      } 
     }
     .footer {
       font-size: 0.9rem;
@@ -503,6 +686,27 @@ import request from '@/api/request';
     .log {
       font-size: 0.9rem;
       color: #58B6EE;
+      font-weight: 700;
+    }
+  }
+  .disabled-style {
+    position: absolute;
+    // border: 2px solid red;
+    width: 40%;
+    padding: 6px 0;
+    bottom: 5%;
+    border-radius: 6px;
+    background-color: #999999;
+    // height: 100%;
+    right: 0;
+    display: flex;
+    justify-content:center;
+    align-items: center;
+    cursor: pointer;
+    // height: 100%;
+    span {
+      font-size: 0.8rem;
+      color: white;
       font-weight: 700;
     }
   }
