@@ -5,6 +5,7 @@ import moment from 'moment';
 import App from './App.vue'
 import router from './router';
 import VueRouter from 'vue-router';
+import axios from 'axios'
 
 Vue.prototype.$moment = moment;
 
@@ -15,5 +16,6 @@ Vue.config.productionTip = false
 
 new Vue({
   router,
+  axios,
   render: h => h(App),
 }).$mount('#app')
