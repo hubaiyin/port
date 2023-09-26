@@ -21,8 +21,7 @@
             ></el-input>
           </el-form-item>
           <el-form-item label="货物类型">
-            <el-select v-model="keyword.containerType" size="mini">
-              <el-option label="全部" :value="null"></el-option>
+            <el-select multiple v-model="keyword.containerType" size="mini">
               <el-option label="冷藏" value="冷藏"></el-option>
               <el-option label="干货" value="干货"></el-option>
             </el-select>
@@ -121,18 +120,24 @@
         </el-menu>
         <div class="buttons">
           <el-button type="primary" size="small">新建</el-button>
-          <el-button size="small" icon="el-icon-plus" style="width: 90px"
-            >批量操作</el-button
+          <el-button size="small" type="info" @click="showNone"
+            >批量发送</el-button
+          >
+          <el-button size="small" type="danger" @click="deletes"
+            >批量删除</el-button
           >
         </div>
       </div>
       <div class="content">
         <el-table
+          ref="form"
           v-show="activeIndex === 'goods'"
           :data="clientList"
           height="400px"
           style="width: 100%"
+          @selection-change="handleSelectionChange"
         >
+          <el-table-column type="selection" width="25"></el-table-column>
           <el-table-column prop="id" label="编号"> </el-table-column>
           <el-table-column prop="orderNumber" label="订单号"> </el-table-column>
           <el-table-column prop="clientName" label="客户名称">
@@ -142,7 +147,7 @@
             :key="index"
             :prop="item.prop"
             :label="item.label"
-            :width="item.prop === 'createAt' ? 180 : 90"
+            :width="item.prop === 'createAt' ? 180 : 130"
           >
           </el-table-column>
           <el-table-column
@@ -183,7 +188,7 @@
           <el-table-column prop="details" label="详情信息" fixed="right">
             <template slot-scope="scope">
               <el-button type="text" @click="view(scope.$index, scope.row)"
-                >编辑</el-button
+                >查看</el-button
               >
             </template>
           </el-table-column>
@@ -201,17 +206,20 @@
               <i
                 style="font-size: 18px"
                 class="el-icon-delete-solid"
-                @click="deletes(scope.$index, scope.row)"
+                @click="deleteOne(scope.row)"
               ></i>
             </template>
           </el-table-column>
         </el-table>
         <el-table
+          ref="form2"
           v-show="activeIndex === 'boats'"
           :data="shipList"
           height="350px"
           style="width: 100%"
+          @selection-change="handleSelectionChange"
         >
+          <el-table-column type="selection" width="25"></el-table-column>
           <el-table-column prop="id" label="编号"> </el-table-column>
           <el-table-column prop="orderNumber" label="订单号" width="150">
           </el-table-column>
@@ -239,7 +247,7 @@
           <el-table-column prop="details" label="详情信息" fixed="right">
             <template slot-scope="scope">
               <el-button type="text" @click="view(scope.$index, scope.row)"
-                >编辑</el-button
+                >查看</el-button
               >
             </template>
           </el-table-column>
@@ -257,7 +265,7 @@
               <i
                 style="font-size: 18px"
                 class="el-icon-delete-solid"
-                @click="deletes(scope.$index, scope.row)"
+                @click="deleteOne(scope.row)"
               ></i>
             </template>
           </el-table-column>
@@ -267,6 +275,8 @@
           :page-size="size"
           layout="total, prev, pager, next"
           :total="total"
+          :current-page.sync="page"
+          @current-change="getList"
         >
         </el-pagination>
       </div>
@@ -370,6 +380,7 @@ export default {
       },
       activeIndex: "goods",
       type: 0,
+      orderList: [],
     };
   },
   mounted() {
@@ -391,21 +402,34 @@ export default {
     changeForm(title, type) {
       this.activeIndex = title;
       this.type = type;
+      this.orderList = [];
+      this.$refs.form.clearSelection();
+      this.$refs.form2.clearSelection();
       this.reset();
     },
     view(index, row) {
       console.log(index, row);
     },
-    send(index, row) {
-      console.log(index, row);
+    send() {
+      this.showNone();
     },
-    deletes(index, row) {
-      console.log(index, row);
+    async deleteOne(row) {
+      let deleteList = [row.id];
+      await request({
+        method: "delete",
+        data: {
+          deleteList: deleteList,
+        },
+      }).then((res) => {
+        console.log(res);
+        this.getList();
+      });
     },
     search() {
       this.getList();
     },
     reset() {
+      this.timeRange = null;
       for (const key in this.keyword) {
         this.keyword[key] = null;
       }
@@ -436,7 +460,47 @@ export default {
             //   }, 5000);
             // },
           });
+          return;
         }
+        if (this.type === 0) {
+          this.clientList = data.data.clientList;
+        } else {
+          this.shipList = data.data.shipList;
+        }
+        this.total = data.data.pageData.total;
+      });
+    },
+    handleSelectionChange(val) {
+      this.orderList = val;
+      console.log(this.orderList);
+    },
+    showNone() {
+      this.$message({
+        message: "功能暂未开放",
+        type: "warning",
+      });
+    },
+    async deletes() {
+      if (!this.orderList.length) {
+        this.$message({
+          message: "请至少选择一项",
+          type: "error",
+        });
+        return;
+      }
+      let deleteList = [];
+      this.orderList.map((item) => {
+        console.log(item.id);
+        deleteList.push(item.id);
+      });
+      await request({
+        method: "delete",
+        data: {
+          deleteList: deleteList,
+        },
+      }).then((res) => {
+        console.log(res);
+        this.getList();
       });
     },
   },
@@ -537,7 +601,7 @@ export default {
       }
       .buttons {
         display: flex;
-        width: 180px;
+        width: 250px;
         justify-content: space-between;
         align-items: center;
         ::v-deep .el-button + .el-button {
