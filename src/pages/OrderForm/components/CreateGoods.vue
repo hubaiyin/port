@@ -352,6 +352,10 @@ export default {
         color: #969ba4;
         line-height: 20px;
       }
+      ::v-deep .el-input__inner {
+        background-color: #f6f6f6;
+        border: 1px solid #f6f6f6;
+      }
       ::v-deep .el-form-item__content {
         margin-left: 0 !important;
       }

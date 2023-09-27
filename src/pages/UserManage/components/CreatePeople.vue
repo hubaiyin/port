@@ -231,24 +231,24 @@ export default {
   data() {
     return {
       inform: {
-        name: "王子",
-        departmentId: 114514,
-        job: "回家部",
-        jobNumber: 10086,
+        name: null,
+        departmentId: null,
+        job: null,
+        jobNumber: null,
         education: null,
         gender: 0,
-        position: "第一人",
+        position: null,
         address: null,
-        age: 18,
-        phone: 18108074809,
+        age: null,
+        phone: null,
         avatarUrl: "http://dummyimage.com/100x100",
         maritalStatus: null,
         nativePlace: null,
         healthStatus: null,
         politicCountenance: null,
-        nation: "汉族",
+        nation: null,
         jobIntention: null,
-        email: "1150122664@qq.com",
+        email: null,
         educationalBackground: null,
         workingExperience: null,
         englishLevel: null,
@@ -293,7 +293,10 @@ export default {
                 });
                 return;
               }
-              this.time = new Date(res.data.data.expirationTime);
+              // this.time = new Date(res.data.data.expirationTime);
+              this.time = this.$moment(res.data.data.expirationTime).format(
+                "YYYY-MM-DD hh:mm:ss"
+              );
               this.code = res.data.data.inviteCode;
               this.isShow = true;
             })
@@ -361,6 +364,10 @@ export default {
         justify-content: center;
         align-items: center;
       }
+      ::v-deep .el-input__inner {
+        background-color: #f6f6f6;
+        border: 1px solid #f6f6f6;
+      }
     }
     .button {
       margin-top: 3%;
@@ -374,7 +381,7 @@ export default {
     }
   }
   .showCode {
-    height: 550px;
+    height: 250px;
     display: flex;
     flex-direction: column;
     justify-content: center;
