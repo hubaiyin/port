@@ -21,8 +21,7 @@
             ></el-input>
           </el-form-item>
           <el-form-item label="货物类型">
-            <el-select v-model="keyword.containerType" size="mini">
-              <el-option label="全部" :value="null"></el-option>
+            <el-select multiple v-model="keyword.containerType" size="mini">
               <el-option label="冷藏" value="冷藏"></el-option>
               <el-option label="干货" value="干货"></el-option>
             </el-select>
@@ -63,25 +62,6 @@
             </el-select>
           </el-form-item>
           <el-form-item label="预计进出港时间" style="width: 50%">
-            <!-- <el-col :span="11">
-              <el-date-picker
-                type="date"
-                placeholder="开始日期"
-                v-model="keyword.exceprArrivalAtBegin"
-                style="width: 100%"
-                size="mini"
-              ></el-date-picker>
-            </el-col>
-            <el-col class="line" :span="2">-</el-col>
-            <el-col :span="11">
-              <el-date-picker
-                type="date"
-                placeholder="结束日期"
-                v-model="keyword.exceptArrivalAtEnd"
-                style="width: 100%"
-                size="mini"
-              ></el-date-picker>
-            </el-col> -->
             <el-date-picker
               v-model="timeRange"
               type="daterange"
@@ -120,19 +100,34 @@
           >
         </el-menu>
         <div class="buttons">
-          <el-button type="primary" size="small">新建</el-button>
-          <el-button size="small" icon="el-icon-plus" style="width: 90px"
-            >批量操作</el-button
+          <el-dropdown @command="handleCommand">
+            <el-button type="primary" size="small">
+              新建<i class="el-icon-arrow-down el-icon--right"></i>
+            </el-button>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item command="0">货主/货代</el-dropdown-item>
+              <el-dropdown-item command="1">船公司/船代</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+          <el-button size="small" type="info" @click="showNone"
+            >批量发送</el-button
+          >
+          <el-button size="small" type="danger" @click="deletes"
+            >批量删除</el-button
           >
         </div>
       </div>
       <div class="content">
         <el-table
+          ref="form"
           v-show="activeIndex === 'goods'"
+          v-loading="loading && type === 0"
           :data="clientList"
           height="400px"
           style="width: 100%"
+          @selection-change="handleSelectionChange"
         >
+          <el-table-column type="selection" width="25"></el-table-column>
           <el-table-column prop="id" label="编号"> </el-table-column>
           <el-table-column prop="orderNumber" label="订单号"> </el-table-column>
           <el-table-column prop="clientName" label="客户名称">
@@ -142,7 +137,7 @@
             :key="index"
             :prop="item.prop"
             :label="item.label"
-            :width="item.prop === 'createAt' ? 180 : 90"
+            :width="item.prop === 'createAt' ? 180 : 130"
           >
           </el-table-column>
           <el-table-column
@@ -183,7 +178,7 @@
           <el-table-column prop="details" label="详情信息" fixed="right">
             <template slot-scope="scope">
               <el-button type="text" @click="view(scope.$index, scope.row)"
-                >编辑</el-button
+                >查看</el-button
               >
             </template>
           </el-table-column>
@@ -201,17 +196,21 @@
               <i
                 style="font-size: 18px"
                 class="el-icon-delete-solid"
-                @click="deletes(scope.$index, scope.row)"
+                @click="deleteOne(scope.row)"
               ></i>
             </template>
           </el-table-column>
         </el-table>
         <el-table
+          ref="form2"
           v-show="activeIndex === 'boats'"
           :data="shipList"
           height="350px"
           style="width: 100%"
+          @selection-change="handleSelectionChange"
+          v-loading="loading && type === 1"
         >
+          <el-table-column type="selection" width="25"></el-table-column>
           <el-table-column prop="id" label="编号"> </el-table-column>
           <el-table-column prop="orderNumber" label="订单号" width="150">
           </el-table-column>
@@ -239,7 +238,7 @@
           <el-table-column prop="details" label="详情信息" fixed="right">
             <template slot-scope="scope">
               <el-button type="text" @click="view(scope.$index, scope.row)"
-                >编辑</el-button
+                >查看</el-button
               >
             </template>
           </el-table-column>
@@ -257,7 +256,7 @@
               <i
                 style="font-size: 18px"
                 class="el-icon-delete-solid"
-                @click="deletes(scope.$index, scope.row)"
+                @click="deleteOne(scope.row)"
               ></i>
             </template>
           </el-table-column>
@@ -267,16 +266,37 @@
           :page-size="size"
           layout="total, prev, pager, next"
           :total="total"
+          :current-page.sync="page"
+          @current-change="getList"
         >
         </el-pagination>
       </div>
     </div>
+    <div class="cover" v-if="isShow">
+      <div class="icon">
+        <i class="el-icon-circle-close" @click="isShow = false"></i>
+      </div>
+      <div class="optionContent">
+        <create-goods @close="close" :type="createType"></create-goods>
+      </div>
+    </div>
+    <el-dialog
+      top="6vh"
+      :visible.sync="dialogVisible"
+      width="900px"
+      :before-close="handleClose"
+    >
+      <detail-vc v-if="dialogVisible" @shutDown="shut" :ID="ID"></detail-vc>
+    </el-dialog>
   </div>
 </template>
 <script>
 import request from "@/api/request";
+import DetailVc from "./components/DetailVc.vue";
+import CreateGoods from "./components/CreateGoods.vue";
 export default {
   name: "OrderForm",
+  components: { CreateGoods, DetailVc },
   data() {
     return {
       timeRange: null,
@@ -292,36 +312,14 @@ export default {
         exceptArrivalAtEnd: null,
         reallyArrival: null,
       },
+      createType: 0,
+      isShow: false,
       size: 20,
       total: 100,
       page: 1,
-      clientList: [
-        {
-          id: 1,
-          orderNumber: "TJUT123",
-          clientName: "徐嘉豪",
-          containerType: "冷藏",
-          portStatus: 0,
-          createAt: "2023-02-09 02:30:00",
-          exceptArrivalAt: "2023-02-12 02:30:00",
-          status: 0,
-          process: 0,
-        },
-      ],
-      shipList: [
-        {
-          id: 19,
-          orderNumber: "J7NYOWNZDC5T",
-          clientName: "梅书豪",
-          shipCompanyName: "天津码头公司",
-          shipName: "K3SNM8",
-          startPort: "天津",
-          middlePort: "上海",
-          endPort: "广州",
-          exceptArrivalAt: null,
-          process: 0,
-        },
-      ],
+      loading: false,
+      clientList: [],
+      shipList: [],
       clientListProp: [
         {
           prop: "containerType",
@@ -370,6 +368,9 @@ export default {
       },
       activeIndex: "goods",
       type: 0,
+      orderList: [],
+      dialogVisible: false,
+      ID: null,
     };
   },
   mounted() {
@@ -380,32 +381,67 @@ export default {
     // console.log(request.post());
   },
   methods: {
+    handleClose(done) {
+      this.$confirm("确认关闭？")
+        .then((_) => {
+          done(_);
+        })
+        .catch(() => {
+          // console.log(_);
+        });
+    },
     setTime(e) {
-      console.log(e);
+      // console.log(e);
       this.keyword.exceprArrivalAtBegin = e[0];
       this.keyword.exceptArrivalAtEnd = e[1];
     },
     onSubmit() {
-      console.log("submit!");
+      // console.log("submit!");
     },
     changeForm(title, type) {
       this.activeIndex = title;
       this.type = type;
+      this.orderList = [];
+      this.$refs.form.clearSelection();
+      this.$refs.form2.clearSelection();
       this.reset();
     },
     view(index, row) {
-      console.log(index, row);
+      console.log(index);
+      this.dialogVisible = true;
+      this.ID = row.id;
     },
-    send(index, row) {
-      console.log(index, row);
+    send() {
+      this.showNone();
     },
-    deletes(index, row) {
-      console.log(index, row);
+    async deleteOne(row) {
+      let deleteList = [row.id];
+      this.loading = true;
+      await request({
+        method: "delete",
+        url: "/api/order-management/order/b",
+        data: {
+          deleteList: deleteList,
+        },
+      })
+        .then(() => {
+          this.loading = false;
+          this.getList();
+        })
+        .catch((err) => {
+          this.loading = false;
+          this.$notify({
+            title: "删除失败",
+            type: "error",
+            message: err.message + " 请稍后重试",
+          });
+        });
     },
     search() {
       this.getList();
     },
     reset() {
+      this.timeRange = null;
       for (const key in this.keyword) {
         this.keyword[key] = null;
       }
@@ -413,6 +449,7 @@ export default {
       this.getList();
     },
     async getList() {
+      this.loading = true;
       await request({
         method: "post",
         url: "/api/order-management/order/list/b",
@@ -422,42 +459,137 @@ export default {
           size: this.size,
           keyWord: this.keyword,
         },
-      }).then(({ data }) => {
-        console.log(data);
-        if (data.status === "Failed") {
-          localStorage.clear("token");
+      }).then(
+        ({ data }) => {
+          // console.log(data);
+          this.loading = false;
+          if (data.code !== "00000") {
+            this.$notify({
+              title: "错误",
+              message: data.message + "\n" + "将于5秒后回到登录页面",
+              type: "error",
+              onClose: () => {
+                setTimeout(() => {
+                  localStorage.clear("token");
+                  this.$router.replace("/");
+                }, 5000);
+              },
+            });
+            return;
+          }
+          if (this.type === 0) {
+            this.clientList = data.data.clientList;
+          } else {
+            this.shipList = data.data.shipList;
+          }
+          this.total = data.data.pageData.total;
+        },
+        (err) => {
+          this.loading = false;
           this.$notify({
-            title: "错误",
-            message: data.message + "\n" + "将于5秒后回到登录页面",
+            title: "请求失败",
             type: "error",
-            // onClose: () => {
-            //   setTimeout(() => {
-            //     this.$router.replace("/");
-            //   }, 5000);
-            // },
+            message: err.message + " 请稍后刷新重试",
           });
         }
+      );
+    },
+    handleSelectionChange(val) {
+      this.orderList = val;
+      // console.log(this.orderList);
+    },
+    showNone() {
+      this.$message({
+        message: "功能暂未开放",
+        type: "warning",
       });
+    },
+    async deletes() {
+      if (!this.orderList.length) {
+        this.$message({
+          message: "请至少选择一项",
+          type: "error",
+        });
+        return;
+      }
+      let deleteList = [];
+      this.orderList.map((item) => {
+        // console.log(item.id);
+        deleteList.push(item.id);
+      });
+      this.loading = true;
+      await request({
+        method: "delete",
+        url: "/api/order-management/order/b",
+        data: {
+          deleteList: deleteList,
+        },
+      })
+        .then((res) => {
+          this.loading = false;
+          // console.log(res);
+          if (res.data.code !== "00000") {
+            this.$notify({
+              title: "删除失败",
+              message: res.data.message,
+              type: "error",
+            });
+            return;
+          }
+          this.getList();
+        })
+        .catch((err) => {
+          this.loading = false;
+          this.$notify({
+            title: "删除失败",
+            type: "error",
+            message: err.message + " 请稍后重试",
+          });
+        });
+    },
+    createGoods() {
+      this.createType = 0;
+      this.isShow = true;
+    },
+    createBoats() {
+      // console.log("hi");
+      this.createType = 1;
+      this.isShow = true;
+    },
+    close() {
+      // console.log("hi");
+      this.isShow = false;
+    },
+    handleCommand(command) {
+      // console.log(command);
+      if (command === 0) this.createGoods();
+      else this.createBoats();
+    },
+    shut() {
+      this.$confirm("确认关闭？")
+        .then(() => {
+          this.dialogVisible = false;
+        })
+        .catch(() => {});
     },
   },
 };
 </script>
 <style lang="scss" scoped>
 .orderBox {
+  position: relative;
   height: 100%;
   width: 100%;
   background: #fff;
   padding: 16px;
   box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
   .options {
     height: 25%;
     width: 100%;
     border-bottom: 3px solid #e8eaee;
     display: flex;
     flex-direction: column;
+    box-sizing: border-box;
     .title {
       font-weight: 800;
       font-size: 20px;
@@ -516,7 +648,7 @@ export default {
     }
   }
   .forms {
-    flex: 1;
+    height: 75%;
     display: flex;
     flex-direction: column;
     .head {
@@ -537,7 +669,7 @@ export default {
       }
       .buttons {
         display: flex;
-        width: 180px;
+        width: 250px;
         justify-content: space-between;
         align-items: center;
         ::v-deep .el-button + .el-button {
@@ -555,6 +687,15 @@ export default {
           color: #fff;
           background-color: #3362f6;
           border-color: #3362f6;
+        }
+        .el-dropdown {
+          vertical-align: top;
+        }
+        .el-dropdown + .el-dropdown {
+          margin-left: 15px;
+        }
+        .el-icon-arrow-down {
+          font-size: 12px;
         }
       }
     }
@@ -577,6 +718,37 @@ export default {
         cursor: pointer;
       }
     }
+  }
+  .cover {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: #f8f9fa;
+    height: 100%;
+    width: 100%;
+    z-index: 999;
+    // padding: 16px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    .icon {
+      background: #fff;
+      .el-icon-circle-close:before {
+        content: "\e78d";
+        font-size: 32px;
+        color: #969ba4;
+      }
+      padding: 10px;
+      padding-left: 2.5%;
+      box-sizing: border-box;
+      border-radius: 12px 12px 0 0;
+    }
+    .optionContent {
+      flex: 1;
+    }
+  }
+  ::v-deep .el-dialog {
+    background: #e8eaee;
   }
 }
 </style>
