@@ -32,11 +32,12 @@ const router = new VueRouter({
                     path: '/manage/usermanage',
                     component: () => import('@/pages/UserManage/UserManage.vue')
                 },
-                {
-                    path: '/manage/datamanage',
-                    component: () => import('@/pages/DataManage/DataManage.vue')
-                }
+                
             ]
+        },
+        {
+            path: '/manage/datamanage',
+            component: () => import('@/pages/DataManage/DataManage.vue')
         }
     ]
 })
