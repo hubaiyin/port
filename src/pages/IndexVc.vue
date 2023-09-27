@@ -16,8 +16,12 @@
       </div>
     </el-header>
     <el-container>
-      <el-aside width="200px">
-        <el-menu :default-active="defaultActive" class="el-menu-vertical-demo">
+      <el-aside width="auto">
+        <el-menu
+          :default-active="defaultActive"
+          class="el-menu-vertical-demo"
+          :collapse="isCollapse"
+        >
           <el-menu-item
             v-for="item in routes"
             :key="item.index"
@@ -73,6 +77,8 @@ export default {
           path: "/manage/personal",
         },
       ],
+      isCollapse: false,
+      change: null,
     };
   },
   methods: {
@@ -80,9 +86,38 @@ export default {
       this.defaultActive = path.split("/")[2];
       this.$router.push(path);
     },
+    debounce(func, delay = 200) {
+      let timer = null;
+      return function (...args) {
+        const context = this;
+
+        if (timer) {
+          clearTimeout(timer);
+        }
+
+        timer = setTimeout(() => {
+          func.apply(context, args);
+          timer = null;
+        }, delay);
+      };
+    },
   },
   mounted() {
+    if (document.documentElement.clientWidth <= 1100) {
+      this.isCollapse = true;
+    }
     this.defaultActive = this.$route.path.split("/")[2];
+    this.change = this.debounce(() => {
+      if (document.documentElement.clientWidth <= 1100) {
+        this.isCollapse = true;
+      } else {
+        this.isCollapse = false;
+      }
+    });
+    window.addEventListener("resize", this.change);
+  },
+  beforeDestroy() {
+    window.removeEventListener("resize", this.change);
   },
 };
 </script>
@@ -134,7 +169,7 @@ export default {
       .el-menu {
         border: none;
         .el-menu-item {
-          font-size: 15px;
+          font-size: 14px;
           i::before {
             font-size: 20px;
           }
