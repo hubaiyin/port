@@ -559,6 +559,7 @@ export default {
     close() {
       // console.log("hi");
       this.isShow = false;
+      this.getList();
     },
     handleCommand(command) {
       // console.log(command);
@@ -577,6 +578,9 @@ export default {
 </script>
 <style lang="scss" scoped>
 .orderBox {
+  ::v-deep .el-dialog {
+    border-radius: 20px;
+  }
   position: relative;
   height: 100%;
   width: 100%;

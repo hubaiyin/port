@@ -181,7 +181,7 @@ export default {
   data() {
     return {
       keyword: {
-        type: 1,
+        type: this.type,
         startPort: null,
         middlePort: null,
         endPort: null,
