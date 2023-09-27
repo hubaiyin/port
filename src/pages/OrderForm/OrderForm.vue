@@ -48,10 +48,10 @@
           <el-form-item label="状态">
             <el-select v-model="keyword.status" size="mini">
               <el-option label="全部" :value="null"></el-option>
-              <el-option label="未审核" value="0"></el-option>
-              <el-option label="未开始" value="1"></el-option>
-              <el-option label="进行中" value="2"></el-option>
-              <el-option label="已完成" value="3"></el-option>
+              <el-option label="未审核" :value="0"></el-option>
+              <el-option label="未开始" :value="1"></el-option>
+              <el-option label="进行中" :value="2"></el-option>
+              <el-option label="已完成" :value="3"></el-option>
             </el-select>
           </el-form-item>
           <el-form-item label="进程">
@@ -612,6 +612,10 @@ export default {
         display: flex;
         justify-content: flex-start;
         flex-wrap: wrap;
+        ::v-deep .el-input__inner {
+          background-color: #f6f6f6;
+          border: 1px solid #f6f6f6;
+        }
         .el-form-item {
           margin-bottom: 0 !important;
           width: 33%;
@@ -630,6 +634,10 @@ export default {
             display: flex;
             justify-content: center;
             align-items: center;
+          }
+          ::v-deep .el-range-editor--mini .el-range-input {
+            font-size: 12px;
+            background: #f6f6f6;
           }
         }
       }
