@@ -96,8 +96,18 @@ export default {
           url:"/api/personal-center/detail",
         })
         .then(res => {
+          if(res.data.code != "00000") {
+            this.$notify({
+              title: 'token过期！',
+              message: '将于2s后返回登录界面',
+              type: 'error'
+            })
+            setTimeout(()=>{
+              this.$router.push({path:"/login"})
+            },2000)
+          }
           console.log(res);
-          this.info = res.data.data
+          this.info = res.data.data;
         })
         .catch(err => {
           console.log(err);

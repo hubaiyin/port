@@ -5,7 +5,7 @@
         <img src="../../assets/logo.png" />
       </div>
       <div class="title">
-        <span>港口码头集装箱管理<br />智慧绿色云服务平台</span>
+        <span>港口智核服务平台</span>
       </div>
     </div>
     <div class="right">
@@ -14,9 +14,21 @@
         <div class="loginTitle"><span>登录 Login</span></div>
         <!-- select -->
         <div class="select">
-          <div class="first"><span>账户密码登录</span></div>
+          <div
+            class="first"
+            @click="chooseOne()"
+            :class="this.way === 1 ? 'choosen' : ''"
+          >
+            <span>账户密码登录</span>
+          </div>
           <div class="divide">|</div>
-          <div class="second"><span>手机短信登录</span></div>
+          <div
+            class="second"
+            @click="chooseTwo()"
+            :class="this.way === 2 ? 'choosen' : ''"
+          >
+            <span>手机短信登录</span>
+          </div>
         </div>
         <!-- phone -->
         <div class="phone">
@@ -126,6 +138,73 @@
           <span class="log" @click="toLogin">登录</span>
         </div>
       </div>
+      <div class="msgBox" v-show="status === 'message'">
+        <!-- title -->
+        <div class="loginTitle"><span>登录 Login</span></div>
+        <!-- select -->
+        <div class="select">
+          <div
+            class="first"
+            @click="chooseOne()"
+            :class="this.way === 1 ? 'choosen' : ''"
+          >
+            <span>账户密码登录</span>
+          </div>
+          <div class="divide">|</div>
+          <div
+            class="second"
+            @click="chooseTwo()"
+            :class="this.way === 2 ? 'choosen' : ''"
+          >
+            <span>手机短信登录</span>
+          </div>
+        </div>
+        <!-- phone -->
+        <div class="phone">
+          <input
+            type="text"
+            placeholder="请输入手机号"
+            v-model="msgParam.phone"
+          />
+          <img src="../../assets/user.png" alt="" />
+        </div>
+        <!-- msg -->
+        <div class="msg">
+          <input
+            type="text"
+            placeholder="短信验证码"
+            v-model="msgParam.msgCode"
+          />
+          <img src="../../assets/msg.png" alt="" />
+          <button
+            @click="sentLoginMsg()"
+            :class="{
+              'disabled-style': getCodeBtnDisable,
+              sentMsg: !getCodeBtnDisable,
+            }"
+            :disabled="getCodeBtnDisable"
+          >
+            <span class="sent">{{ codeBtnWord }}</span>
+          </button>
+        </div>
+        <div class="msgTip">
+          <span>{{ msgTip }}</span>
+        </div>
+        <!-- btn -->
+        <div class="btn" @click="login(1)">
+          <span>登 录</span>
+        </div>
+        <!-- footer -->
+        <div class="footer">
+          <div class="forget">
+            <span><a>忘记密码?</a></span>
+          </div>
+          <div class="regist">
+            <span>没有账号？</span>
+            <span class="reg" @click="toRegister()"><a>注册</a></span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -146,7 +225,9 @@ export default {
       verify: null,
       tip: "",
       regTip: "",
+      msgTip: "",
       waitTime: 61,
+      way: 1,
       codeBtnWord: "获取验证码",
       getCodeBtnDisable: false,
       registParam: {
@@ -155,6 +236,10 @@ export default {
         password: "",
         rePassword: "",
         inviteCode: "",
+      },
+      msgParam: {
+        phone: null,
+        msgCode: null,
       },
     };
   },
@@ -183,8 +268,16 @@ export default {
     toLogin() {
       this.status = "login";
     },
+    chooseOne() {
+      this.way = 1;
+      this.status = "login";
+    },
+    chooseTwo() {
+      this.way = 2;
+      this.status = "message";
+    },
     check(way) {
-      if (way === "login") {
+      if (way === 2) {
         if (this.phone != null && this.password != "") {
           if (this.verify != this.identifyCode) {
             this.tip = "验证码错误";
@@ -193,6 +286,14 @@ export default {
           return true;
         } else {
           this.tip = "请检查信息是否填写完整！";
+          return false;
+        }
+      }
+      if (way === 1) {
+        if (this.msgParam.phone != null && this.msgParam.msgCode != "") {
+          return true;
+        } else {
+          this.msgTip = "请检查信息是否填写完整！";
           return false;
         }
       }
@@ -226,7 +327,10 @@ export default {
       return true;
     },
     async login(way) {
-      if (this.check("login")) {
+      if (this.check(way) == false) {
+        return;
+      }
+      if (way === 2) {
         await request({
           method: "post",
           url: "/api/login/b",
@@ -266,13 +370,49 @@ export default {
               });
             }
           });
-      } else {
-        this.$message({
-          message: "登录失败！",
-          type: "error",
-        });
       }
-      // this.$verify.check();
+      if (way === 1) {
+        await request({
+          method: "post",
+          url: "/api/login/b",
+          data: {
+            type: way,
+            phone: this.msgParam.phone,
+            password: this.msgParam.msgCode,
+          },
+        })
+          .then((res) => {
+            console.log(res);
+            if (res.data.code !== "00000") {
+              this.msgTip = "验证码错误";
+              this.msgParam.msgCode = null;
+              this.$message({
+                message: "登录失败！",
+                type: "error",
+              });
+            } else {
+              window.localStorage.setItem("token", res.data.data.token);
+              this.$message({
+                message: "登录成功！",
+                type: "success",
+              });
+              this.$router.push({ path: "/manage" });
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+            if (
+              err.code === "ECONNABORTED" ||
+              err.message === "Network Error" ||
+              err.message.includes("timeout")
+            ) {
+              this.$message({
+                message: "请求超时，请稍后重试",
+                type: "error",
+              });
+            }
+          });
+      }
     },
     async register() {
       if (this.checkRegister()) {
@@ -362,20 +502,59 @@ export default {
           console.log(err);
         });
     },
-  },
-  computed: {
-    // getCodeBtnDisable:{
-    //   get(){
-    //       if(this.waitTime == 61){
-    //           if(this.registParam.phone){
-    //               return false;
-    //           }
-    //           return true;
-    //       }
-    //       return true;
-    //   },
-    //   set(){}
-    // }
+    async sentLoginMsg() {
+      this.msgTip = "";
+      let reg = /^1[3456789]\d{9}$/;
+      if (this.msgParam.phone == null) {
+        this.msgTip = "请填写手机号!";
+        return;
+      }
+      if (!reg.test(this.msgParam.phone)) {
+        this.msgTip = "手机号不合法!";
+        return;
+      }
+      console.log("手机号为：" + this.msgParam.phone);
+      await request({
+        method: "post",
+        url: "/api/login/send-code",
+        data: {
+          phone: this.msgParam.phone,
+        },
+      })
+        .then((res) => {
+          console.log("手机短信登录");
+          console.log(res);
+          if (res.data.code != "00000") {
+            this.$message({
+              message: "发送失败",
+              type: "error",
+            });
+          } else {
+            this.$message({
+              message: "验证码发送成功!",
+              type: "success",
+            });
+            let that = this;
+            that.waitTime--;
+            that.getCodeBtnDisable = true;
+            this.codeBtnWord = `${this.waitTime}s 后重新获取`;
+            let timer = setInterval(function () {
+              if (that.waitTime > 1) {
+                that.waitTime--;
+                that.codeBtnWord = `${that.waitTime}s 后重新获取`;
+              } else {
+                clearInterval(timer);
+                that.codeBtnWord = "获取验证码";
+                that.getCodeBtnDisable = false;
+                that.waitTime = 61;
+              }
+            }, 1000);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    },
   },
 };
 </script>
@@ -385,8 +564,8 @@ export default {
   padding: 0;
 }
 .main {
-  border: 2px solid red;
-  width: 100%;
+  // border: 2px solid red;
+  width: 100vw;
   height: 100vh;
   display: flex;
   align-items: center;
@@ -432,6 +611,7 @@ export default {
       box-shadow: -5px 5px 10px -4px rgb(148, 148, 148),
         8px -5px 8px -6px rgb(218, 218, 218);
       width: 55%;
+      min-width: 330px;
       height: 70%;
       border-radius: 20px;
       ////////////
@@ -458,9 +638,11 @@ export default {
           border-top: 0;
           border-left: 0;
           border-bottom: 0;
+          cursor: pointer;
         }
         .second {
           // border: 2px solid black;
+          cursor: pointer;
         }
         .divide {
           font-size: 1.5rem;
@@ -683,10 +865,162 @@ export default {
         }
       }
     }
-
+    .msgBox {
+      // border: 2px solid green;
+      box-shadow: -5px 5px 10px -4px rgb(148, 148, 148),
+        8px -5px 8px -6px rgb(218, 218, 218);
+      width: 55%;
+      height: 70%;
+      border-radius: 20px;
+      ////////////
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-around;
+      .loginTitle {
+        span {
+          font-weight: 700;
+          font-size: 1.8rem;
+        }
+        margin-top: 5%;
+      }
+      .select {
+        display: flex;
+        // border: 2px solid orange;
+        align-items: center;
+        justify-content: space-around;
+        width: 60%;
+        .first {
+          // width: 40%;
+          // border: 2px solid black;
+          border-top: 0;
+          border-left: 0;
+          border-bottom: 0;
+          cursor: pointer;
+        }
+        .second {
+          // border: 2px solid black;
+          cursor: pointer;
+        }
+        .divide {
+          font-size: 1.5rem;
+        }
+      }
+      .phone {
+        height: 5%;
+        width: 64%;
+        position: relative;
+        display: flex;
+        align-items: center;
+        // border: 2px solid pink;
+        input {
+          height: 100%;
+          width: 100%;
+          border-top: 0;
+          border-left: 0;
+          border-right: 0;
+          font-size: 0.9rem;
+          padding-left: 35px;
+        }
+        input:focus {
+          height: 100%;
+          outline: none;
+          border-bottom: 2px solid black;
+        }
+        img {
+          width: 25px;
+          height: 25px;
+          position: absolute;
+          bottom: 20%;
+        }
+      }
+      .msg {
+        height: 5%;
+        width: 64%;
+        position: relative;
+        display: flex;
+        position: relative;
+        align-items: center;
+        input {
+          height: 100%;
+          width: 100%;
+          border-top: 0;
+          border-left: 0;
+          border-right: 0;
+          font-size: 0.9rem;
+          padding-left: 35px;
+          padding-bottom: 3px;
+        }
+        input:focus {
+          height: 100%;
+          outline: none;
+          border-bottom: 2px solid black;
+        }
+        img {
+          width: 25px;
+          height: 25px;
+          position: absolute;
+          bottom: 10%;
+        }
+        .sentMsg {
+          position: absolute;
+          // border: 2px solid red;
+          width: 40%;
+          padding: 6px 0;
+          bottom: 5%;
+          border-radius: 6px;
+          background-color: #0c1d41;
+          // height: 100%;
+          right: 0;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          cursor: pointer;
+          // height: 100%;
+          span {
+            font-size: 0.8rem;
+            color: white;
+            font-weight: 700;
+          }
+        }
+      }
+      .msgTip {
+        color: red;
+        font-size: 0.8rem;
+        position: relative;
+        bottom: 4.3%;
+      }
+      .footer {
+        // border: 2px solid pink;
+        width: 63%;
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+        .regist,
+        .forget {
+          span > a {
+            cursor: pointer;
+            font-weight: 700;
+            color: #58b6ee;
+          }
+          a:link {
+            text-decoration: none;
+            color: #58b6ee;
+          }
+          a:visited {
+            text-decoration: none;
+            color: #58b6ee;
+          }
+          a:active {
+            text-decoration: none;
+            color: blue;
+          }
+        }
+      }
+    }
     .btn {
       // border: 2px solid pink;
-      width: 63%;
+      width: 64%;
       height: 8%;
       border-radius: 6px;
       display: flex;
@@ -740,6 +1074,12 @@ export default {
       color: white;
       font-weight: 700;
     }
+  }
+  .choosen {
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    color: #0d6191;
   }
 }
 </style>
