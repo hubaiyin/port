@@ -76,7 +76,6 @@ VueRouter.prototype.replace = function (location, resolve, reject) {
 };
 
 router.beforeEach((to, from, next) => {
-    console.log(to.path.split('/')[1]);
     const key = to.path.split('/')[1]
     if (key === 'manage' && !localStorage.getItem('token')) {
         next('/')

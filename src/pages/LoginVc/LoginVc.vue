@@ -57,7 +57,7 @@
         </div>
         <!-- footer -->
         <div class="footer">
-          <div class="forget">
+          <div class="forget" @click="forget">
             <span><a>忘记密码?</a></span>
           </div>
           <div class="regist">
@@ -196,9 +196,6 @@
         </div>
         <!-- footer -->
         <div class="footer">
-          <div class="forget">
-            <span><a>忘记密码?</a></span>
-          </div>
           <div class="regist">
             <span>没有账号？</span>
             <span class="reg" @click="toRegister()"><a>注册</a></span>
@@ -244,12 +241,19 @@ export default {
     };
   },
   mounted() {
+    if (localStorage.getItem("token")) {
+      this.$router.push("/manage");
+      return;
+    }
     this.identifyCode = "";
     this.makeCode(this.identifyCodes, 4);
   },
   methods: {
     randomNum(min, max) {
       return Math.floor(Math.random() * (max - min) + min);
+    },
+    forget() {
+      this.status = "message";
     },
     refreshCode() {
       this.identifyCode = "";
@@ -260,7 +264,7 @@ export default {
         this.identifyCode +=
           this.identifyCodes[this.randomNum(0, this.identifyCodes.length)];
       }
-      console.log(this.identifyCode);
+      // console.log(this.identifyCode);
     },
     toRegister() {
       this.status = "register";
@@ -341,7 +345,7 @@ export default {
           },
         })
           .then((res) => {
-            console.log(res);
+            // console.log(res);
             if (res.data.code !== "00000") {
               this.tip = res.data.message;
               this.$message({
@@ -358,7 +362,7 @@ export default {
             }
           })
           .catch((err) => {
-            console.log(err);
+            // console.log(err);
             if (
               err.code === "ECONNABORTED" ||
               err.message === "Network Error" ||
@@ -382,7 +386,7 @@ export default {
           },
         })
           .then((res) => {
-            console.log(res);
+            // console.log(res);
             if (res.data.code !== "00000") {
               this.msgTip = "验证码错误";
               this.msgParam.msgCode = null;
@@ -400,7 +404,7 @@ export default {
             }
           })
           .catch((err) => {
-            console.log(err);
+            // console.log(err);
             if (
               err.code === "ECONNABORTED" ||
               err.message === "Network Error" ||
@@ -416,7 +420,7 @@ export default {
     },
     async register() {
       if (this.checkRegister()) {
-        console.log(this.registParam);
+        // console.log(this.registParam);
         await request({
           method: "post",
           url: "/api/register/b",
@@ -426,22 +430,31 @@ export default {
             code: this.registParam.msgCode,
             password: this.registParam.password,
           },
-        }).then((res) => {
-          console.log(res);
-          if (res.data.code != "00000") {
-            this.regTip = res.data.message;
-            this.$message({
-              message: "注册失败！",
+        }).then(
+          (res) => {
+            // console.log(res);
+            if (res.data.code != "00000") {
+              this.regTip = res.data.message;
+              this.$message({
+                message: "注册失败！",
+                type: "error",
+              });
+            } else {
+              this.$message({
+                message: "注册成功！",
+                type: "success",
+              });
+              this.status = "login";
+            }
+          },
+          (err) => {
+            this.$notify({
               type: "error",
+              title: "错误",
+              message: err.message + " 请重试",
             });
-          } else {
-            this.$message({
-              message: "注册成功！",
-              type: "success",
-            });
-            this.status = "login";
           }
-        });
+        );
       }
     },
     async sentMsg() {
@@ -459,7 +472,7 @@ export default {
         this.regTip = "请填写邀请码!";
         return;
       }
-      console.log("手机号为：" + this.registParam.phone);
+      // console.log("手机号为：" + this.registParam.phone);
       await request({
         method: "post",
         url: "/api/register/send-code",
@@ -469,7 +482,7 @@ export default {
         },
       })
         .then((res) => {
-          console.log(res);
+          // console.log(res);
           if (res.data.code != "00000") {
             this.regTip = res.data.message;
             this.$message({
@@ -499,7 +512,12 @@ export default {
           }
         })
         .catch((err) => {
-          console.log(err);
+          // console.log(err);
+          this.$notify({
+            type: "error",
+            title: "错误",
+            message: err.message + "请重试",
+          });
         });
     },
     async sentLoginMsg() {
@@ -552,7 +570,12 @@ export default {
           }
         })
         .catch((err) => {
-          console.log(err);
+          // console.log(err);
+          this.$notify({
+            type: "error",
+            title: "错误",
+            message: err.message + " 请重试",
+          });
         });
     },
   },
@@ -565,7 +588,7 @@ export default {
 }
 .main {
   // border: 2px solid red;
-  width: 100vw;
+  width: 100%;
   height: 100vh;
   display: flex;
   align-items: center;
