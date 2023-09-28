@@ -6,12 +6,20 @@
           <div class="logo">
             <img src="../assets/boat.png" alt="" />
           </div>
-          <div class="title">港口码头集装箱管理智慧绿色云服务平台</div>
+          <div class="title">港口智核服务平台</div>
         </div>
         <div class="right">
-          <div class="block" @click="jump('/manage/personal')">
-            <el-avatar :size="32" src="/assets/logo.png"></el-avatar>
-          </div>
+          <el-dropdown
+            style="height: 100%; display: flex; align-items: center"
+            @command="quit"
+          >
+            <div class="block" @click="jump('/manage/personal')">
+              <img src="../assets/logo.png" alt="" />
+            </div>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item command>退出登录</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
         </div>
       </div>
     </el-header>
@@ -34,7 +42,7 @@
         </el-menu>
       </el-aside>
       <el-main>
-        <router-view></router-view>   
+        <router-view></router-view>
       </el-main>
     </el-container>
   </el-container>
@@ -51,12 +59,6 @@ export default {
           icon: "el-icon-s-goods",
           message: "订单管理",
           path: "/manage/orderform",
-        },
-        {
-          index: "planview",
-          icon: "el-icon-menu",
-          message: "堆场平面图",
-          path: "/manage/planview",
         },
         {
           index: "usermanage",
@@ -100,6 +102,17 @@ export default {
           timer = null;
         }, delay);
       };
+    },
+    quit() {
+      this.$notify({
+        type: "success",
+        title: "退出成功",
+        message: "将于两秒后返回登录页",
+        onClose: () => {
+          localStorage.clear("token");
+          this.$router.replace("/");
+        },
+      });
     },
   },
   mounted() {
@@ -154,10 +167,16 @@ export default {
       .right {
         display: flex;
         align-items: center;
+        height: 100%;
         .block {
           display: flex;
           align-items: center;
           cursor: pointer;
+          height: 70%;
+          img {
+            height: 100%;
+            border-radius: 50%;
+          }
         }
       }
     }

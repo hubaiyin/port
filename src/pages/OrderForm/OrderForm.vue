@@ -466,13 +466,12 @@ export default {
           if (data.code !== "00000") {
             this.$notify({
               title: "错误",
-              message: data.message + "\n" + "将于5秒后回到登录页面",
+              message: data.message + "\n" + "将于2秒后回到登录页面",
               type: "error",
+              duration: 2000,
               onClose: () => {
-                setTimeout(() => {
-                  localStorage.clear("token");
-                  this.$router.replace("/");
-                }, 5000);
+                localStorage.clear("token");
+                this.$router.replace("/");
               },
             });
             return;
