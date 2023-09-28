@@ -3,25 +3,20 @@
     <div class="header">
       <div class="back" @click="goBack()">
         <div class="icon">
-          <img src="../../assets/back.png" alt="">
+          <img src="../../assets/back.png" alt="" />
         </div>
         <span>BACK</span>
       </div>
       <div class="title">
         <div class="icon">
-          <img src="../../assets/data.png" alt="">
+          <img src="../../assets/data.png" alt="" />
         </div>
         <span>Pollution Detect</span>
       </div>
     </div>
     <div class="content">
       <div class="charts">
-        <div
-          class="chart"
-          v-for="item in datas"
-          :key="item.title.text"
-          :class="double"
-        >
+        <div class="chart double" v-for="item in datas" :key="item.title.text">
           <dv-border-box-11 :title="item.title.text"
             ><div class="chartBox">
               <Charts :chartOption="item" /></div
@@ -33,25 +28,25 @@
 </template>
 
 <script>
-import { mapGetters, mapState } from "vuex";
+import { mapActions, mapGetters } from "vuex";
 import Charts from "@/component/Echarts.vue";
 export default {
   name: "DataManage",
   components: { Charts },
   data() {
-    return {
-    };
+    return {};
   },
   mounted() {
     // console.log(this.data);
+    this.getDatas({ url: "/api/iot/sensor/data", that: this });
   },
   methods: {
-    goBack(){
-      this.$router.push({ path:"/manage" })
-    }
+    ...mapActions("charts", ["getDatas"]),
+    goBack() {
+      this.$router.push({ path: "/manage" });
+    },
   },
   computed: {
-    ...mapState("charts", ["data"]),
     ...mapGetters("charts", ["datas"]),
   },
 };
@@ -64,7 +59,7 @@ export default {
   flex-direction: column;
   align-items: center;
   color: #e9e7e7;
-  background-image: linear-gradient(to top, #292f84,#281dbb, #2b2d9d);
+  background-image: linear-gradient(to top, #292f84, #281dbb, #2b2d9d);
   // background: linear-gradient(#193eae, #0b31a3  , #132d78);
   .header {
     // border: 2px solid red;
