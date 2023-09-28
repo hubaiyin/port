@@ -10,7 +10,7 @@
         </div>
         <div class="right">
           <div class="block" @click="jump('/manage/personal')">
-            <el-avatar :size="32" src="/assets/logo.png"></el-avatar>
+            <el-avatar :size="32" :src="info.avatarUrl"></el-avatar>
           </div>
         </div>
       </div>
@@ -40,6 +40,7 @@
   </el-container>
 </template>
 <script>
+import request from '@/api/request';
 export default {
   name: "IndexVc",
   data() {
@@ -79,6 +80,7 @@ export default {
       ],
       isCollapse: false,
       change: null,
+      info:{},
     };
   },
   methods: {
@@ -101,6 +103,19 @@ export default {
         }, delay);
       };
     },
+    async getInfo(){
+      await request({
+        method:"get",
+        url:"/api/personal-center/detail",
+      })
+      .then(res => {
+        console.log(res);
+        this.info = res.data.data
+      })
+      .catch(err => {
+        console.log(err);
+      })
+    }
   },
   mounted() {
     if (document.documentElement.clientWidth <= 1100) {
@@ -115,6 +130,7 @@ export default {
       }
     });
     window.addEventListener("resize", this.change);
+    this.getInfo();
   },
   beforeDestroy() {
     window.removeEventListener("resize", this.change);
