@@ -14,7 +14,7 @@
             @command="quit"
           >
             <div class="block" @click="jump('/manage/personal')">
-              <img src="../assets/logo.png" alt="" />
+              <img :src="info.avatarUrl" alt="" />
             </div>
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item command>退出登录</el-dropdown-item>
@@ -79,6 +79,9 @@ export default {
           path: "/manage/personal",
         },
       ],
+      info: {
+        avatarUrl: null,
+      },
       isCollapse: false,
       change: null,
     };
@@ -102,6 +105,19 @@ export default {
           timer = null;
         }, delay);
       };
+    },
+    async getInfo() {
+      await request({
+        method: "get",
+        url: "/api/personal-center/detail",
+      })
+        .then((res) => {
+          console.log(res);
+          this.info = res.data.data;
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     },
     quit() {
       this.$notify({
@@ -128,6 +144,7 @@ export default {
       }
     });
     window.addEventListener("resize", this.change);
+    this.getInfo();
   },
   beforeDestroy() {
     window.removeEventListener("resize", this.change);
