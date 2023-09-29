@@ -176,7 +176,7 @@ export default {
     },
   },
   mounted() {
-    // console.log(this.type);
+    console.log(this.type);
   },
   data() {
     return {
