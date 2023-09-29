@@ -34,11 +34,17 @@ export default {
   name: "DataManage",
   components: { Charts },
   data() {
-    return {};
+    return {
+      status: true,
+      timer: null,
+    };
   },
   mounted() {
     // console.log(this.data);
     this.getDatas({ url: "/api/iot/sensor/data", that: this });
+    this.timer = setInterval(() => {
+      this.getDatas({ url: "/api/iot/sensor/data", that: this });
+    }, 5000);
   },
   methods: {
     ...mapActions("charts", ["getDatas"]),
@@ -48,6 +54,13 @@ export default {
   },
   computed: {
     ...mapGetters("charts", ["datas"]),
+  },
+  watch: {
+    status: {
+      handler() {
+        clearInterval(this.timer);
+      },
+    },
   },
 };
 </script>
