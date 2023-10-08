@@ -56,22 +56,39 @@
     </el-dialog>
     <el-dialog
       :visible.sync="dialogVisible2"
-      width="800px"
+      width="600px"
       :before-close="handleClose"
     >
       <div class="detail">
-        <el-avatar :size="80" :src="details.avatarUrl"></el-avatar>
-        <h3>{{ details.name }}</h3>
-        <strong class="gender">{{ details.gender }}</strong>
-        <strong class="id">{{ details.id }}</strong>
-        <div class="time">{{ details.department }}</div>
+        <div class="avator">
+          <el-avatar :size="80" :src="details.avatarUrl"></el-avatar>
+          <div class="base">
+            <h3>{{ details.name }}</h3>
+            <div class="baseInform">
+              <div class="sex">No.{{ details.id }}</div>
+              <div class="department">{{ details.department }}</div>
+            </div>
+          </div>
+        </div>
         <div class="information">
-          <div>入职时间：{{ details.entryTime }}</div>
-          <div>职位：{{ details.job }}</div>
-          <div>联系方式：{{ details.phone }}</div>
-          <div>学历：{{ details.education }}</div>
-          <div>年龄：{{ details.age }}</div>
-          <div>地址：{{ details.address }}</div>
+          <div>
+            入职时间：<span>{{ details.entryTime }}</span>
+          </div>
+          <div>
+            性别<span>{{ details.gender }}</span>
+          </div>
+          <div>
+            联系方式：<span>{{ details.phone }}</span>
+          </div>
+          <div>
+            学历：<span>{{ details.education }}</span>
+          </div>
+          <div>
+            年龄：<span>{{ details.age }}</span>
+          </div>
+          <div>
+            地址：<span>{{ details.address }}</span>
+          </div>
         </div>
       </div>
     </el-dialog>
@@ -118,6 +135,19 @@ export default {
         },
       }).then(
         ({ data }) => {
+          if (data.code !== "00000") {
+            this.$notify({
+              title: "错误",
+              message: data.message + "\n" + "将于2秒后回到登录页面",
+              type: "error",
+              duration: 2000,
+              onClose: () => {
+                localStorage.clear("token");
+                this.$router.replace("/");
+              },
+            });
+            return;
+          }
           console.log(data.data);
           this.loading = false;
           this.details = data.data.personnelDetailData;
@@ -214,22 +244,66 @@ export default {
   ::v-deep .el-dialog {
     border-radius: 10px;
   }
+  ::v-deep .el-dialog__body {
+    padding-top: 0;
+  }
   .detail {
+    width: 100%;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    height: 400px;
+    align-items: flex-start;
+    height: 300px;
     justify-content: space-around;
+    .avator {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 48%;
+      .base {
+        .baseInform {
+          display: flex;
+
+          .sex,
+          .department {
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            padding: 5px 0;
+            border-radius: 5px;
+          }
+          .sex {
+            width: 60px;
+            background: #cccccc;
+          }
+          .department {
+            width: 100px;
+            background: #3871e0;
+            margin-left: 5px;
+          }
+        }
+      }
+    }
     .information {
+      box-sizing: border-box;
+      width: 95%;
       margin-top: 20px;
       display: flex;
-      justify-content: space-around;
+      justify-content: space-between;
       flex-wrap: wrap;
       height: 150px;
       div {
         width: 49%;
         box-sizing: border-box;
-        padding: 0 10%;
+        padding: 2px 0;
+        display: flex;
+        flex-direction: column;
+        font-weight: bold;
+        font-size: 15px;
+        span {
+          margin-top: 6px;
+          font-weight: normal;
+          font-size: 12px;
+        }
       }
     }
   }

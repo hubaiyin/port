@@ -236,6 +236,10 @@ export default {
             required: true,
             message: "不能为空",
           },
+          {
+            type: "number",
+            message: "必须是数字",
+          },
         ],
         "container[0].num": [
           {
@@ -285,10 +289,10 @@ export default {
               }
               this.$emit("close");
             })
-            .catch(() => {
+            .catch((err) => {
               this.$notify({
                 title: "失败",
-                message: "请重试",
+                message: err.message + " 请重试",
                 type: "error",
               });
             });

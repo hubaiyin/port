@@ -22,7 +22,7 @@ export default {
 } */
 #app {
   height: 100vh;
-  width: 100vw;
+  width: 100%;
   min-height: 800px;
   min-width: 1180px;
 }

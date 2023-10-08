@@ -294,6 +294,7 @@
 import request from "@/api/request";
 import DetailVc from "./components/DetailVc.vue";
 import CreateGoods from "./components/CreateGoods.vue";
+import moment from "moment";
 export default {
   name: "OrderForm",
   components: { CreateGoods, DetailVc },
@@ -466,21 +467,38 @@ export default {
           if (data.code !== "00000") {
             this.$notify({
               title: "错误",
-              message: data.message + "\n" + "将于5秒后回到登录页面",
+              message: data.message + "\n" + "将于2秒后回到登录页面",
               type: "error",
+              duration: 2000,
               onClose: () => {
-                setTimeout(() => {
-                  localStorage.clear("token");
-                  this.$router.replace("/");
-                }, 5000);
+                localStorage.clear("token");
+                this.$router.replace("/");
               },
             });
             return;
           }
           if (this.type === 0) {
-            this.clientList = data.data.clientList;
+            const datas = data.data.clientList;
+            datas.map((item) => {
+              if (item.createAt)
+                item.createAt = moment(item.createAt).format(
+                  "YYYY-MM-DD HH:mm:ss"
+                );
+              if (item.exceptArrivalAt)
+                item.exceptArrivalAt = moment(item.exceptArrivalAt).format(
+                  "YYYY-MM-DD HH:mm:ss"
+                );
+            });
+            this.clientList = datas;
           } else {
-            this.shipList = data.data.shipList;
+            const datas = data.data.shipList;
+            datas.map((item) => {
+              if (item.exceptArrivalAt)
+                item.exceptArrivalAt = moment(item.exceptArrivalAt).format(
+                  "YYYY-MM-DD HH:mm:ss"
+                );
+            });
+            this.shipList = datas;
           }
           this.total = data.data.pageData.total;
         },
@@ -564,7 +582,7 @@ export default {
       this.getList();
     },
     handleCommand(command) {
-      console.log(command);
+      // console.log(command);
       if (command === "0") this.createGoods();
       else this.createBoats();
     },
