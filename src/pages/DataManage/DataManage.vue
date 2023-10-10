@@ -125,6 +125,7 @@ export default {
       }
       span {
         font-family: "novence", "半展开", "粗体";
+        font-weight: 700;
         font-size: 4rem;
         box-sizing: border-box;
         padding-bottom: 1%;

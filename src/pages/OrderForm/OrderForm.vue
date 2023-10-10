@@ -567,11 +567,13 @@ export default {
     },
     createGoods() {
       this.createType = 0;
+      console.log('@goods',this.createType);
       this.isShow = true;
     },
     createBoats() {
       // console.log("hi");
       this.createType = 1;
+      console.log('@boats',this.createType);
       this.isShow = true;
     },
     close() {
