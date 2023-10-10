@@ -4,9 +4,9 @@
       <div class="header">
         <div class="left">
           <div class="logo">
-            <img src="../assets/boat.png" alt="" />
+            <img src="../assets/logo.png" alt="" />
           </div>
-          <div class="title">港口智核服务平台</div>
+          <div class="title">港运智联服务平台</div>
         </div>
         <div class="right">
           <el-dropdown
@@ -173,7 +173,7 @@ export default {
         display: flex;
         align-items: center;
         .logo {
-          height: 60%;
+          height: 80%;
           img {
             height: 100%;
           }

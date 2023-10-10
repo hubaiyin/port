@@ -1,4 +1,5 @@
-const baseurl = 'http://api.yuleng.top:38089'
+// const baseurl = 'http://cs.api.yuleng.top'
+const baseurl = 'http://192.168.115.22:38089'
 
 import axios from "axios"
 

@@ -5,7 +5,7 @@
         <img src="../../assets/logo.png" />
       </div>
       <div class="title">
-        <span>港口智核服务平台</span>
+        <span>港运智联服务平台</span>
       </div>
     </div>
     <div class="right">

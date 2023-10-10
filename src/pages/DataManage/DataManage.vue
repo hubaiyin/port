@@ -5,13 +5,13 @@
         <div class="icon">
           <img src="../../assets/back.png" alt="" />
         </div>
-        <span>BACK</span>
+        <span>返回</span>
       </div>
       <div class="title">
         <div class="icon">
           <img src="../../assets/data.png" alt="" />
         </div>
-        <span>Pollution Detect</span>
+        <span>污染监测</span>
       </div>
     </div>
     <div class="content">
@@ -45,6 +45,10 @@ export default {
     this.timer = setInterval(() => {
       this.getDatas({ url: "/api/iot/sensor/data", that: this });
     }, 5000);
+    this.$router.afterEach(() => {
+      clearInterval(this.timer);
+      console.log("bye");
+    });
   },
   methods: {
     ...mapActions("charts", ["getDatas"]),
@@ -124,6 +128,7 @@ export default {
         font-size: 4rem;
         box-sizing: border-box;
         padding-bottom: 1%;
+        font-weight: 700;
       }
     }
   }
