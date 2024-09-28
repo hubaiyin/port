@@ -2,7 +2,7 @@
   <div class="main">
     <div class="up">
       <div class="avatar">
-        <img :src="info.avatarUrl" alt="">
+        <img :src="info.avatarUrl" alt="" />
       </div>
       <div class="name">
         <span>{{ info.name }}</span>
@@ -17,57 +17,77 @@
       </div>
       <div class="moreInfo">
         <div class="left">
-           <!--  -->
+          <!--  -->
           <div class="education">
             <div class="title2"><span>学历：</span></div>
-            <div class="res"><span>{{ info.education }}</span></div>
+            <div class="res">
+              <span>{{ info.education }}</span>
+            </div>
           </div>
           <!--  -->
           <div class="position">
             <div class="title2"><span>部门：</span></div>
-            <div class="res"><span>{{ info.position }}</span></div>
+            <div class="res">
+              <span>{{ info.position }}</span>
+            </div>
           </div>
           <!--  -->
           <div class="address">
             <div class="title2"><span>地址：</span></div>
-            <div class="res"><span>{{ info.address }}</span></div>
+            <div class="res">
+              <span>{{ info.address }}</span>
+            </div>
           </div>
           <!--  -->
           <div class="age">
             <div class="title2"><span>年龄：</span></div>
-            <div class="res"><span>{{ info.age }}</span></div>
+            <div class="res">
+              <span>{{ info.age }}</span>
+            </div>
           </div>
           <!--  -->
           <div class="phone">
             <div class="title2"><span>电话：</span></div>
-            <div class="res"><span>{{ info.phone }}</span></div>
+            <div class="res">
+              <span>{{ info.phone }}</span>
+            </div>
           </div>
         </div>
         <div class="right">
           <!--  -->
           <div class="maritalStatus">
             <div class="title2"><span>婚姻状态：</span></div>
-            <div class="res"><span>{{ info.maritalStatus }}</span></div>
+            <div class="res">
+              <span>{{ info.maritalStatus }}</span>
+            </div>
           </div>
           <!--  -->
           <div class="nation">
             <div class="title2"><span>民族：</span></div>
-            <div class="res"><span>{{ info.nation }}</span></div>
+            <div class="res">
+              <span>{{ info.nation }}</span>
+            </div>
           </div>
           <!--  -->
           <div class="otherSkills">
             <div class="title2"><span>其他技能：</span></div>
-            <div class="res"><span>{{ info.otherSkills }}</span></div>
+            <div class="res">
+              <span>{{ info.otherSkills }}</span>
+            </div>
           </div>
           <!--  -->
           <div class="politicCountenance">
             <div class="title2"><span>政治面貌：</span></div>
-            <div class="res"><span>{{ info.politicCountenance }}</span></div>
+            <div class="res">
+              <span>{{ info.politicCountenance }}</span>
+            </div>
           </div>
           <!--  -->
           <div class="email">
             <div class="title2"><span>邮箱：</span></div>
-            <div class="res"><span>{{ info.email }}</span></div>
+            <div class="res">
+              <span>{{ info.email }}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -76,43 +96,43 @@
 </template>
 
 <script>
-import request from '@/api/request';
+import request from "@/api/request";
 export default {
   name: "PersonalVc",
   data() {
     return {
-      nickName:"",
-      profession:"",
-      info:{}
-    }
+      nickName: "",
+      profession: "",
+      info: {},
+    };
   },
   mounted() {
     this.getInfo();
   },
   methods: {
-      async getInfo(){
-        await request({
-          method:"get",
-          url:"/api/personal-center/detail",
-        })
-        .then(res => {
-          if(res.data.code != "00000") {
+    async getInfo() {
+      await request({
+        method: "get",
+        url: "/api/personal-center/detail",
+      })
+        .then((res) => {
+          if (res.data.code != "00000") {
             this.$notify({
-              title: 'token过期！',
-              message: '将于2s后返回登录界面',
-              type: 'error'
-            })
-            setTimeout(()=>{
-              this.$router.push({path:"/login"})
-            },2000)
+              title: "token过期！",
+              message: "将于2s后返回登录界面",
+              type: "error",
+            });
+            setTimeout(() => {
+              this.$router.push({ path: "/login" });
+            }, 2000);
           }
           console.log(res);
           this.info = res.data.data;
         })
-        .catch(err => {
+        .catch((err) => {
           console.log(err);
-        })
-      }
+        });
+    },
   },
 };
 </script>
@@ -141,11 +161,11 @@ export default {
       img {
         width: 100%;
         height: 100%;
-        border-radius: 50%;       
+        border-radius: 50%;
       }
     }
     .name {
-      width: 5%;
+      width: 6%;
       // border: 2px solid red;
       display: flex;
       align-items: center;
@@ -207,7 +227,11 @@ export default {
         // align-items: flex-start;
         flex-direction: column;
         justify-content: space-between;
-        .education , .position , .address , .age , .phone {
+        .education,
+        .position,
+        .address,
+        .age,
+        .phone {
           // border: 2px solid plum;
           margin-bottom: 1%;
           display: flex;
@@ -225,7 +249,7 @@ export default {
             // border: 2px solid red;
             margin-left: 1%;
           }
-        } 
+        }
       }
       .right {
         height: 100%;
@@ -235,7 +259,11 @@ export default {
         // align-items: flex-start;
         flex-direction: column;
         justify-content: space-between;
-        .maritalStatus , .nation , .otherSkills , .politicCountenance , .email {
+        .maritalStatus,
+        .nation,
+        .otherSkills,
+        .politicCountenance,
+        .email {
           margin-bottom: 1%;
           display: flex;
           align-items: center;

@@ -175,6 +175,13 @@
               >
             </template>
           </el-table-column>
+          <el-table-column prop="details" label="审核状态" fixed="right">
+            <template slot-scope="scope">
+              <el-button type="text" @click="view(scope.$index, scope.row)"
+                >查看</el-button
+              >
+            </template>
+          </el-table-column>
           <el-table-column prop="details" label="详情信息" fixed="right">
             <template slot-scope="scope">
               <el-button type="text" @click="view(scope.$index, scope.row)"
@@ -567,13 +574,13 @@ export default {
     },
     createGoods() {
       this.createType = 0;
-      console.log('@goods',this.createType);
+      console.log("@goods", this.createType);
       this.isShow = true;
     },
     createBoats() {
       // console.log("hi");
       this.createType = 1;
-      console.log('@boats',this.createType);
+      console.log("@boats", this.createType);
       this.isShow = true;
     },
     close() {
@@ -629,7 +636,6 @@ export default {
         width: 90%;
         height: 100%;
         background: #fff;
-        display: flex;
         justify-content: flex-start;
         flex-wrap: wrap;
         ::v-deep .el-input__inner {

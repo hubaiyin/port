@@ -5,7 +5,7 @@
         <img src="../../assets/logo.png" />
       </div>
       <div class="title">
-        <span>港口智核服务平台</span>
+        <span>港运智联服务平台</span>
       </div>
     </div>
     <div class="right">
@@ -354,6 +354,7 @@ export default {
               });
             } else {
               window.localStorage.setItem("token", res.data.data.token);
+              localStorage.setItem("permission", res.data.data.permission);
               this.$message({
                 message: "登录成功！",
                 type: "success",
