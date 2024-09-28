@@ -31,7 +31,7 @@
           :collapse="isCollapse"
         >
           <el-menu-item
-            v-for="item in routes"
+            v-for="item in permission ? routes1 : routes0"
             :key="item.index"
             :index="item.index"
             @click="jump(item.path)"
@@ -53,8 +53,23 @@ export default {
   name: "IndexVc",
   data() {
     return {
+      permission: 0,
       defaultActive: "personal",
-      routes: [
+      routes0: [
+        {
+          index: "orderform",
+          icon: "el-icon-s-goods",
+          message: "订单管理",
+          path: "/manage/orderform",
+        },
+        {
+          index: "personal",
+          icon: "el-icon-user-solid",
+          message: "个人中心",
+          path: "/manage/personal",
+        },
+      ],
+      routes1: [
         {
           index: "orderform",
           icon: "el-icon-s-goods",
@@ -131,6 +146,10 @@ export default {
         },
       });
     },
+  },
+  created() {
+    this.permission = Number(localStorage.getItem("permission"));
+    console.log(typeof this.permission);
   },
   mounted() {
     if (document.documentElement.clientWidth <= 1100) {

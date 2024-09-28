@@ -1,62 +1,6 @@
 <template>
   <div class="Goods">
     <el-form ref="form" :model="keyword" label-width="125px" :rules="rule">
-      <div class="goods">
-        <el-form-item label="箱号" prop="container[0].number">
-          <el-input
-            size="mini"
-            style="padding-right: 15px"
-            placeholder="请输入箱号"
-            v-model="keyword.container[0].number"
-          ></el-input>
-        </el-form-item>
-        <el-form-item label="货物名称">
-          <el-input
-            size="mini"
-            style="padding-right: 15px"
-            placeholder="请输入货物名称"
-            v-model="keyword.container[0].name"
-          ></el-input>
-        </el-form-item>
-        <el-form-item label="货物数量" prop="container[0].num">
-          <el-input
-            size="mini"
-            style="padding-right: 15px"
-            placeholder="请输入货物数量"
-            v-model.number="keyword.container[0].num"
-          ></el-input>
-        </el-form-item>
-        <el-form-item label="货物类型">
-          <el-select multiple v-model="keyword.container[0].type" size="mini">
-            <el-option label="冷藏" value="冷藏"></el-option>
-            <el-option label="干货" value="干货"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="分票信息">
-          <el-input
-            size="mini"
-            style="padding-right: 15px"
-            placeholder="请输入分票信息"
-            v-model="keyword.container[0].votesMsg"
-          ></el-input>
-        </el-form-item>
-        <el-form-item label="货箱重量">
-          <el-input
-            size="mini"
-            style="padding-right: 15px"
-            placeholder="请输入货箱重量"
-            v-model.number="keyword.container[0].weight"
-          ></el-input>
-        </el-form-item>
-        <el-form-item label="货箱比例">
-          <el-input
-            size="mini"
-            style="padding-right: 15px"
-            placeholder="请输入货箱比例 1*1*1"
-            v-model="keyword.container[0].volume"
-          ></el-input>
-        </el-form-item>
-      </div>
       <!-- 分割线 -->
       <div class="client">
         <el-form-item label="委托人编号" prop="client.id">
@@ -159,6 +103,82 @@
           ></el-input>
         </el-form-item>
       </div>
+      <div class="goods">
+        <div class="title">
+          集装箱
+          <i class="el-icon-circle-plus" @click="addContainer"></i>
+          <i
+            class="el-icon-remove"
+            style="margin-left: 10px"
+            @click="removeContainer"
+          ></i>
+        </div>
+        <template v-for="(item, index) in keyword.container">
+          <div class="containerName" :key="index" style="margin-bottom: 10px">
+            货箱{{ index + 1 }}
+          </div>
+          <div class="good" :key="index">
+            <el-form-item label="箱号" prop="container[0].number">
+              <el-input
+                size="mini"
+                style="padding-right: 15px"
+                placeholder="请输入箱号"
+                v-model="keyword.container[index].number"
+              ></el-input>
+            </el-form-item>
+            <el-form-item label="货物名称">
+              <el-input
+                size="mini"
+                style="padding-right: 15px"
+                placeholder="请输入货物名称"
+                v-model="keyword.container[index].name"
+              ></el-input>
+            </el-form-item>
+            <el-form-item label="货物数量" prop="container[0].num">
+              <el-input
+                size="mini"
+                style="padding-right: 15px"
+                placeholder="请输入货物数量"
+                v-model.number="keyword.container[index].num"
+              ></el-input>
+            </el-form-item>
+            <el-form-item label="货物类型">
+              <el-select
+                multiple
+                v-model="keyword.container[index].type"
+                size="mini"
+              >
+                <el-option label="冷藏" value="冷藏"></el-option>
+                <el-option label="干货" value="干货"></el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="分票信息">
+              <el-input
+                size="mini"
+                style="padding-right: 15px"
+                placeholder="请输入分票信息"
+                v-model="keyword.container[index].votesMsg"
+              ></el-input>
+            </el-form-item>
+            <el-form-item label="货箱重量">
+              <el-input
+                size="mini"
+                style="padding-right: 15px"
+                placeholder="请输入货箱重量"
+                v-model.number="keyword.container[index].weight"
+              ></el-input>
+            </el-form-item>
+            <el-form-item label="货箱比例">
+              <el-input
+                size="mini"
+                style="padding-right: 15px"
+                placeholder="请输入货箱比例 1*1*1"
+                v-model="keyword.container[index].volume"
+              ></el-input>
+            </el-form-item>
+          </div>
+        </template>
+      </div>
       <div class="button">
         <el-button type="primary" @click="send">完成</el-button>
       </div>
@@ -225,32 +245,6 @@ export default {
             message: "不能为空",
           },
         ],
-        "container[0].number": [
-          {
-            required: true,
-            message: "不能为空",
-          },
-        ],
-        "ship.companyId": [
-          {
-            required: true,
-            message: "不能为空",
-          },
-          {
-            type: "number",
-            message: "必须是数字",
-          },
-        ],
-        "container[0].num": [
-          {
-            required: true,
-            message: "不能为空",
-          },
-          {
-            type: "number",
-            message: "必须是数字",
-          },
-        ],
         startPort: [
           {
             required: true,
@@ -305,15 +299,29 @@ export default {
         }
       });
     },
+    addContainer() {
+      this.keyword.container.push({
+        name: null,
+        number: null,
+        num: 1,
+        type: null,
+        votesMsg: null,
+        weight: null,
+        volume: null,
+      });
+    },
+    removeContainer() {
+      this.keyword.container.pop();
+    },
   },
 };
 </script>
 <style lang="scss" scoped>
 .Goods {
   height: 100%;
+  overflow: auto;
   width: 100%;
   box-sizing: border-box;
-  display: flex;
   background: #f8f9fa;
   .el-form {
     display: flex;
@@ -324,10 +332,9 @@ export default {
     justify-content: flex-start;
     flex-wrap: wrap;
     .ship,
-    .client,
-    .goods {
+    .client {
+      height: 22vh;
       width: 100%;
-      height: 27%;
       display: flex;
       justify-content: flex-start;
       flex-wrap: wrap;
@@ -337,13 +344,31 @@ export default {
       box-sizing: border-box;
       border-radius: 12px;
     }
+    .goods {
+      background: #fff;
+      padding: 10px;
+      padding-left: 7%;
+      box-sizing: border-box;
+      border-radius: 12px;
+      .title {
+        font-size: 22px;
+        margin-bottom: 14px;
+      }
+      .good {
+        height: 176px;
+        width: 100%;
+        display: flex;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+      }
+    }
     .client {
-      height: 19%;
+      height: 14vh;
     }
 
     .ship,
     .client {
-      margin-top: 20px;
+      margin-bottom: 20px;
     }
     .el-form-item {
       margin-bottom: 0 !important;
@@ -370,7 +395,7 @@ export default {
       }
     }
     .button {
-      margin-top: 6%;
+      margin-top: 20px;
       display: flex;
       justify-content: center;
       ::v-deep .el-button--primary {

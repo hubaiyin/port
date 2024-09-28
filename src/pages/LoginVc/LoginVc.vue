@@ -354,6 +354,7 @@ export default {
               });
             } else {
               window.localStorage.setItem("token", res.data.data.token);
+              localStorage.setItem("permission", res.data.data.permission);
               this.$message({
                 message: "登录成功！",
                 type: "success",
